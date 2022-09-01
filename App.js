@@ -1,66 +1,113 @@
-import React, { useState } from 'react'
-import './App.css'
-
+//App.js
+//===========
 
 const foodDiaryDict = {
   '9jomn7m': {
     key: '9jomn7m',
-    mealName: 'brekfast',
-    mealTime: '10:00',
-    mealDate: '30082022',
+    mealName: 'Brekfast',
+    mealDate: '2022-08-30',
     mealKCallQuantity: 500,
   },
 }
 
-
-function GetItem({ item }) {
-  return (
-    <li className="">
-      {/* {console.log(item.mealName)} */}
-      <span>{item.mealDate}</span>
-      <span>{item.mealTime}</span>
-      <span>{item.mealName}</span>
-      <span>– {item.mealKCallQuantity} kcal</span>
-      <button type="button" class="btn btn-danger btn-sm">
-        x
-      </button>
-    </li>
-  )
-}
-
-
-function getDiaryItem(obj, classDescription) {
-  let items = Object.values(obj)
-
-  items.map((item) => {
-    return (
-      <li className={classDescription}>
-        {console.log(item.mealName)}
-        <span>{item.mealDate}</span>
-        <span>{item.mealTime}</span>
-        <span>{item.mealName}</span>
-        <span>– {item.mealKCallQuantity} kcal</span>
-        <button type="button" class="btn btn-danger btn-sm">
-          x
-        </button>
-      </li>
-    )
-  })
-}
-
-
 function App() {
-  // const [count, valueCount] = useState(0)
+  const [foodItems, getFoodItems] = useState(foodDiaryDict)
+
+  function create(key, { item }) {                                     //------> Создаю эту функцию, чтобы пробросить хук в другую компоненту
+    getFoodItems({ ...foodItems, [key]: item })
+  }
 
   return (
     <>
+      <div className="fooddiary-container p-3">
+        <h2>Food Diary</h2>
+        <h6>New Note</h6>
+        <FoodDiaryInputs dict={foodItems} create={create} />          //----> Прописиваю функцию create для этой компоненты
 
-        <ul className="fooddiary-info">
-          {getDiaryItem(foodDiaryDict, 'fooddiary-info')}
-        </ul>
-      </div>
     </>
   )
 }
 
-export { App }
+//FoodDiaryInputs
+//===============
+
+export default function FoodDiaryInputs({ dict }, { create }) {       //----> Принимаю функцию create аргументом
+  let mealItems = Object(dict)
+  console.log(mealItems)
+  const [mealName, getMealName] = useState('Brekfast')
+  const [mealDate, getMealDate] = useState(getToday())
+  const [mealKCallQuantity, getKCallQuantity] = useState()
+
+  function MealNamesList() {
+    const mealNameList = ['Breakfast', 'Lanch', 'Dinner']
+
+    return (
+      <select
+        className="form-select mb-3"
+        aria-label="Default select example"
+        value={mealName}
+        onChange={(event) => {
+          getMealName(event.target.value)
+        }}
+      >
+        {mealNameList.map((item) => {
+          return mealNameList.indexOf(item) === 0 ? (
+            <option defaultValue={item} selected>
+              {item}
+            </option>
+          ) : (
+            <option defaultValue={item}>{item}</option>
+          )
+        })}
+      </select>
+    )
+  }
+
+  return (
+    <div className="fooddiary-inputs form-inline">
+      <MealNamesList handler={getMealName} />
+
+      <input
+        type="date"
+        className="form-control mb-3"
+        value={mealDate}
+        onChange={(event) => {
+          getMealDate(event.target.value)
+        }}
+      ></input>
+      <div className="input-group mb-3">
+        <input
+          type="text"
+          className="form-control"
+          id=""
+          aria-describedby="basic-addon3"
+          onChange={(event) => {
+            getKCallQuantity(event.target.value)
+          }}
+        />
+        <span className="input-group-text" id="basic-addon3">
+          kcal
+        </span>
+      </div>
+      <button
+        className="btn btn-primary mb-3"
+        type="button"
+        onClick={(_) => {
+          let key = String(getRandomKey(mealItems))
+          let newMeal = {
+            key: `${key}`,
+            mealName: `${mealName}`,
+            mealDate: `${mealDate}`,
+            mealKCallQuantity: mealKCallQuantity,
+          }
+
+          create(key, newMeal)                                         //-------> Пытаюсь вызвать функцию create, браузер пишет <<create is not a function>> 
+          console.log(key, newMeal)                                    // делал все по лекции, вроде каждую точку сравнил)))
+        }}                                                             // 
+      >
+        Add
+      </button>
+    </div>
+  )
+}
+
